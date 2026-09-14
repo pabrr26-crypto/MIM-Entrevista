@@ -43,7 +43,7 @@
     <div class="card" id="telaFinal" style="display: none;">
         <h2>✅ Entrevista Concluída!</h2>
         <p>Todas as respostas foram gravadas com sucesso.</p>
-        <button class="btn btn-enviar" id="btnEnviar" style="display: block;" onclick="enviarWhatsApp()">📲 ENVIAR PARA WHATSAPP</button>
+        <button class="btn btn-enviar" id="btnEnviar" style="display: block;" onclick="enviarPlanilha()">📊 ENVIAR PARA PLANILHA</button>
     </div>
 
     <script>
@@ -154,17 +154,30 @@
             }
         }
 
-        function enviarWhatsApp() {
-            const numero = "5522999447735";
-            let textoFormatado = "*Projeto MIM - Novo Cadastro*%0A%0A";
-            
-            respostas.forEach((resp, index) => {
-                textoFormatado += `${index + 1} - ${resp}%0A`;
-            });
-            
-            const url = `https://wa.me/${numero}?text=${textoFormatado}`;
-            window.open(url, '_blank');
-        }
+        function enviarPlanilha() {
+    const urlScript = "https://script.google.com/macros/s/AKfycbxiP-e6XhMJPYE681HS5hFbWI65P8qN1xkjRSF2WqLdCr3I5DiZ7jYaREGdQH-QZ0Q/exec";
+    
+    const btn = document.getElementById("btnEnviar");
+    btn.innerText = "⏳ SALVANDO DADOS...";
+    btn.disabled = true;
+
+    // Envia o pacote (array) de respostas para a planilha
+    fetch(urlScript, {
+        method: 'POST',
+        mode: 'no-cors', // Isso evita bloqueios de segurança do navegador
+        body: JSON.stringify(respostas)
+    })
+    .then(() => {
+        alert("✅ Entrevista salva com sucesso na planilha!");
+        window.scrollTo(0, 0); // Volta pro topo
+        window.location.reload(); // Reinicia o app para a próxima entrevista
+    })
+    .catch(error => {
+        alert("❌ Erro de conexão. Verifique a internet e tente novamente.");
+        btn.innerText = "📊 TENTAR NOVAMENTE";
+        btn.disabled = false;
+    });
+}
 
         // Inicializa o app
         carregarPergunta();
