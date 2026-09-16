@@ -10,13 +10,35 @@
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 450px; margin: 0 auto; }
         .contador { color: #9c27b0; font-weight: bold; margin-bottom: 10px; font-size: 18px; }
         h2 { color: #333; font-size: 26px; margin-bottom: 25px; }
-        .btn { display: block; width: 100%; padding: 22px; margin: 12px 0; font-size: 20px; border: none; border-radius: 12px; cursor: pointer; color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn { display: block; width: 100%; padding: 18px; margin: 10px 0; font-size: 18px; border: none; border-radius: 12px; cursor: pointer; color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .btn-ouvir { background-color: #007bff; }
         .btn-falar { background-color: #28a745; }
-        .btn-pular { background-color: #ffc107; color: #333; font-size: 18px; padding: 15px; }
-        .btn-proximo { background-color: #6a1b9a; display: none; }
-        .btn-enviar { background-color: #25D366; display: none; }
-        .resultado { margin-top: 20px; font-size: 20px; color: #444; background: #e9ecef; padding: 20px; border-radius: 8px; min-height: 60px; font-weight: bold; }
+        .btn-pular { background-color: #ffc107; color: #333; font-size: 16px; padding: 12px; }
+        .btn-proximo { background-color: #6a1b9a; }
+        .btn-voltar { background-color: #6c757d; font-size: 16px; padding: 12px; }
+        .btn-enviar { background-color: #25D366; display: block; }
+        
+        .botoes-navegacao { display: flex; gap: 10px; margin-top: 15px; }
+        .botoes-navegacao button { flex: 1; }
+
+        /* Estilo para a caixa de texto de digitação/edição */
+        .campo-resposta {
+            width: 100%;
+            height: 90px;
+            padding: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            margin-top: 15px;
+            resize: vertical;
+        }
+        .campo-resposta:focus {
+            border-color: #6a1b9a;
+            outline: none;
+        }
+
         .status-gravando { background-color: #dc3545 !important; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
@@ -32,22 +54,26 @@
         <h2 id="pergunta">Carregando pergunta...</h2>
 
         <button class="btn btn-ouvir" onclick="ouvirPergunta()">🔊 OUVIR PERGUNTA</button>
-        <button class="btn btn-falar" id="btnGravar" onclick="iniciarGravacao()">🎤 RESPONDER</button>
+        <button class="btn btn-falar" id="btnGravar" onclick="iniciarGravacao()">🎤 RESPONDER COM ÁUDIO</button>
         
-        <div id="textoResultado" class="resultado">A resposta vai aparecer aqui...</div>
+        <!-- Caixa de texto para digitação ou correção da resposta falada -->
+        <textarea id="textoResposta" class="campo-resposta" placeholder="A resposta falada aparecerá aqui ou você pode digitar diretamente..."></textarea>
 
         <button class="btn btn-pular" onclick="pularPergunta()">⏭️ PULAR / NÃO SABE</button>
-        <button class="btn btn-proximo" id="btnProximo" onclick="proximaPergunta()">➡️ PRÓXIMA PERGUNTA</button>
+        
+        <div class="botoes-navegacao">
+            <button class="btn btn-voltar" id="btnVoltar" onclick="voltarPergunta()" style="display: none;">⬅️ Voltar</button>
+            <button class="btn btn-proximo" id="btnProximo" onclick="proximaPergunta()">Próxima ➡️</button>
+        </div>
     </div>
 
     <div class="card" id="telaFinal" style="display: none;">
         <h2>✅ Entrevista Concluída!</h2>
-        <p>Todas as respostas foram gravadas com sucesso.</p>
-        <button class="btn btn-enviar" id="btnEnviar" style="display: block;" onclick="enviarPlanilha()">📊 ENVIAR PARA PLANILHA</button>
+        <p>Todas as respostas foram registradas com sucesso.</p>
+        <button class="btn btn-enviar" id="btnEnviar" onclick="enviarPlanilha()">📊 ENVIAR PARA PLANILHA</button>
     </div>
 
     <script>
-        // Lista completa de perguntas baseada no formulário MIM
         const perguntas = [
             "Identificação da Entrevista: Qual é o nome do mobilizador?",
             "Qual é o município, bairro ou comunidade?",
@@ -83,21 +109,27 @@
 
         let indiceAtual = 0;
         let respostas = [];
-        let respostaTemporaria = "";
 
         const elementoPergunta = document.getElementById("pergunta");
         const elementoContador = document.getElementById("contador");
-        const elementoResultado = document.getElementById("textoResultado");
+        const inputResposta = document.getElementById("textoResposta");
         const btnProximo = document.getElementById("btnProximo");
+        const btnVoltar = document.getElementById("btnVoltar");
         const btnGravar = document.getElementById("btnGravar");
 
-        // Carrega a primeira pergunta ao abrir
         function carregarPergunta() {
             elementoPergunta.innerText = perguntas[indiceAtual];
             elementoContador.innerText = `Pergunta ${indiceAtual + 1} de ${perguntas.length}`;
-            elementoResultado.innerText = "Aguardando resposta...";
-            respostaTemporaria = "";
-            btnProximo.style.display = "none";
+            
+            // Carrega a resposta anterior caso já exista (útil ao voltar)
+            inputResposta.value = respostas[indiceAtual] !== undefined ? respostas[indiceAtual] : "";
+            
+            // Controla visibilidade do botão voltar
+            if (indiceAtual > 0) {
+                btnVoltar.style.display = "block";
+            } else {
+                btnVoltar.style.display = "none";
+            }
         }
 
         function ouvirPergunta() {
@@ -108,42 +140,64 @@
 
         // Configuração do microfone
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'pt-BR';
-        recognition.continuous = false;
+        let recognition = null;
 
-        recognition.onstart = function() {
-            btnGravar.classList.add("status-gravando");
-            btnGravar.innerText = "🛑 GRAVANDO... (Fale agora)";
-            elementoResultado.innerText = "Escutando...";
-        };
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.continuous = false;
 
-        recognition.onresult = function(event) {
-            respostaTemporaria = event.results[0][0].transcript;
-            elementoResultado.innerText = respostaTemporaria;
-            btnProximo.style.display = "block"; // Libera o botão de avançar
-        };
+            recognition.onstart = function() {
+                btnGravar.classList.add("status-gravando");
+                btnGravar.innerText = "🛑 GRAVANDO... (Fale agora)";
+                inputResposta.placeholder = "Escutando...";
+            };
 
-        recognition.onend = function() {
-            btnGravar.classList.remove("status-gravando");
-            btnGravar.innerText = "🎤 GRAVAR NOVAMENTE";
-        };
+            recognition.onresult = function(event) {
+                const textoTranscrito = event.results[0][0].transcript;
+                // Se já houver texto digitado, concatena ou substitui conforme preferência (aqui insere o áudio capturado)
+                inputResposta.value = textoTranscrito;
+            };
+
+            recognition.onend = function() {
+                btnGravar.classList.remove("status-gravando");
+                btnGravar.innerText = "🎤 GRAVAR NOVAMENTE";
+                inputResposta.placeholder = "A resposta falada aparecerá aqui ou você pode digitar diretamente...";
+            };
+        } else {
+            btnGravar.style.display = "none"; // Esconde botão se o navegador não suportar reconhecimento de voz
+        }
 
         function iniciarGravacao() {
-            recognition.start();
+            if (recognition) {
+                recognition.start();
+            } else {
+                alert("Seu navegador não suporta reconhecimento de voz. Utilize a digitação.");
+            }
         }
 
         function pularPergunta() {
-            respostaTemporaria = "Não respondeu / Pulou";
+            inputResposta.value = "Não respondeu / Pulou";
             proximaPergunta();
         }
 
+        function voltarPergunta() {
+            // Salva o estado atual antes de voltar
+            respostas[indiceAtual] = inputResposta.value.trim() !== "" ? inputResposta.value : "Sem resposta";
+            if (indiceAtual > 0) {
+                indiceAtual--;
+                carregarPergunta();
+            }
+        }
+
         function proximaPergunta() {
-            if (respostaTemporaria === "") {
-                respostaTemporaria = "Sem resposta";
+            let textoAtual = inputResposta.value.trim();
+            if (textoAtual === "") {
+                textoAtual = "Sem resposta";
             }
             
-            respostas.push(respostaTemporaria);
+            // Salva ou sobrescreve a resposta da pergunta atual
+            respostas[indiceAtual] = textoAtual;
             indiceAtual++;
 
             if (indiceAtual < perguntas.length) {
@@ -155,29 +209,28 @@
         }
 
         function enviarPlanilha() {
-    const urlScript = "https://script.google.com/macros/s/AKfycbxiP-e6XhMJPYE681HS5hFbWI65P8qN1xkjRSF2WqLdCr3I5DiZ7jYaREGdQH-QZ0Q/exec";
-    
-    const btn = document.getElementById("btnEnviar");
-    btn.innerText = "⏳ SALVANDO DADOS...";
-    btn.disabled = true;
+            const urlScript = "https://script.google.com/macros/s/AKfycbxiP-e6XhMJPYE681HS5hFbWI65P8qN1xkjRSF2WqLdCr3I5DiZ7jYaREGdQH-QZ0Q/exec";
+            
+            const btn = document.getElementById("btnEnviar");
+            btn.innerText = "⏳ SALVANDO DADOS...";
+            btn.disabled = true;
 
-    // Envia o pacote (array) de respostas para a planilha
-    fetch(urlScript, {
-        method: 'POST',
-        mode: 'no-cors', // Isso evita bloqueios de segurança do navegador
-        body: JSON.stringify(respostas)
-    })
-    .then(() => {
-        alert("✅ Entrevista salva com sucesso na planilha!");
-        window.scrollTo(0, 0); // Volta pro topo
-        window.location.reload(); // Reinicia o app para a próxima entrevista
-    })
-    .catch(error => {
-        alert("❌ Erro de conexão. Verifique a internet e tente novamente.");
-        btn.innerText = "📊 TENTAR NOVAMENTE";
-        btn.disabled = false;
-    });
-}
+            fetch(urlScript, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(respostas)
+            })
+            .then(() => {
+                alert("✅ Entrevista salva com sucesso na planilha!");
+                window.scrollTo(0, 0);
+                window.location.reload();
+            })
+            .catch(error => {
+                alert("❌ Erro de conexão. Verifique a internet e tente novamente.");
+                btn.innerText = "📊 TENTAR NOVAMENTE";
+                btn.disabled = false;
+            });
+        }
 
         // Inicializa o app
         carregarPergunta();
