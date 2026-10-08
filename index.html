@@ -104,7 +104,7 @@
             "Quais são hoje os 3 maiores problemas desta comunidade?",
             "E o que há de melhor ou de maior força na sua comunidade?",
             "Existe algum espaço ou lugar que poderia ajudar a gerar trabalho e renda na comunidade?",
-            "Para finalizar: O mobilizador identificou alguma informação importante que precisa ser comunicada à Supervisão?"
+            "Para finalizar: O mobilizador identificou alguma informação importante que precisa ser comunicada à Supervisão?",
             "Para finalizar nossa conversa, você autoriza que o projeto Mulheres Inspirando Mulheres guarde essas respostas de forma segura e sigilosa no nosso sistema?",
             "Você também autoriza o uso da sua imagem, como fotos ou vídeos que possamos fazer hoje, nas redes sociais e materiais do projeto?"
         ];
@@ -211,31 +211,4 @@
         }
 
         function enviarPlanilha() {
-            const urlScript = "https://script.google.com/macros/s/AKfycbxiP-e6XhMJPYE681HS5hFbWI65P8qN1xkjRSF2WqLdCr3I5DiZ7jYaREGdQH-QZ0Q/exec";
-            
-            const btn = document.getElementById("btnEnviar");
-            btn.innerText = "⏳ SALVANDO DADOS...";
-            btn.disabled = true;
-
-            fetch(urlScript, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(respostas)
-            })
-            .then(() => {
-                alert("✅ Entrevista salva com sucesso na planilha!");
-                window.scrollTo(0, 0);
-                window.location.reload();
-            })
-            .catch(error => {
-                alert("❌ Erro de conexão. Verifique a internet e tente novamente.");
-                btn.innerText = "📊 TENTAR NOVAMENTE";
-                btn.disabled = false;
-            });
-        }
-
-        // Inicializa o app
-        carregarPergunta();
-    </script>
-</body>
-</html>
+            const urlScript = "
